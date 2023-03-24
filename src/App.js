@@ -1,5 +1,5 @@
+import { Link, Switch, Route, useParams, Redirect } from "react-router-dom";
 import "./App.css";
-import { Link, Redirect, Route, Switch, useParams } from "react-router-dom";
 
 const NavBar = () => {
     return (
@@ -21,8 +21,8 @@ const Users = () => {
     const { userId, action } = useParams();
     return !userId ? (
         <UsersList />
-    ) : !action ? (
-        <UserPage userId={userId} />
+    ) : action === "profile" ? (
+        <UserPage />
     ) : (
         <ProtectedRoute userId={userId} action={action} />
     );
@@ -32,9 +32,18 @@ const ProtectedRoute = ({ userId, action }) => {
     return (
         <Route
             render={() => {
+                if (!action) {
+                    return (
+                        <Redirect
+                            to={{ pathname: `/users/${userId}/profile` }}
+                            state={{ userId }}
+                        />
+                    );
+                }
                 if (action !== "edit") {
                     return <Redirect to={{ pathname: `/users/${userId}` }} />;
                 }
+
                 return <EditUserPage userId={userId} />;
             }}
         />
@@ -58,6 +67,10 @@ const UsersList = () => {
 };
 
 const UserPage = ({ userId }) => {
+    const params = useParams();
+    if (!userId) {
+        userId = params.userId;
+    }
     return (
         <>
             <h1>{"User page #" + userId}</h1>
